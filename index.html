@@ -1,18 +1,73 @@
 <!DOCTYPE html>
-
-<html>
+<html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-  <title>This is my first web site with free host</title>
-  <LINK href="styles.css" rel="stylesheet" type="text/css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSRM | OpenStreetMap</title>
+  
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+    <style>
+        .leaflet-right{
+            display: none;
+        }
+    </style>
 </head>
+<body >
+    <div id="map" class="relative w-screen h-screen"></div>
+    <script>    
+        const map = new L.map('map').setView([41.335527, 69.273116], 10)
+        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map)
 
-<body>
+        var loc1, loc2, routingControl
+        
+        map.on('click', function(e) {
 
-<img src="https://octodex.github.com/images/daftpunktocat-thomas.gif" id="octocat" alt="octocat-gif" />
+            if (loc1 == null) {
+                loc1 = new L.marker(e.latlng, {draggable: 'true'})
+                map.addLayer(loc1)
+            }
 
-<!-- Change this code here by copy and pasting your template on line 15 -->
-<p>Welcome to your first GitHub Pages website!</p>
+            else if (loc2 == null) {
+                loc2 = new L.marker(e.latlng, {draggable: 'true'})
+                map.removeLayer(loc1)
+                Routing(loc1, loc2)
+            } 
+        });
+        
+        function Routing(loc1, loc2) {
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
 
+            routingControl = L.Routing.control({
+                waypoints: [
+                    loc1.getLatLng(),
+                    loc2.getLatLng(),
+                ]
+            }).addTo(map);            
+        }
+      
+        setInterval(function(){
+            if (loc1 != null && loc2 != null){
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        let latitude = position.coords.latitude
+                        let longitude = position.coords.longitude
+                        let distance = L.marker([latitude, longitude]).getLatLng().distanceTo(loc1.getLatLng())
+                        if(distance > 20){
+                            map.removeLayer(loc1)
+                            loc1 = L.marker([latitude, longitude])
+                            Routing(loc1, loc2)
+                        }
+                    })
+                }
+            }
+        }, 1000)
+    </script>
 </body>
 </html>

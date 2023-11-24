@@ -18,28 +18,36 @@
     </style>
 </head>
 <body >
-    <div id="map" class="relative w-screen h-screen"></div>
+    <!-- <div id="map" class="relative w-screen h-screen"></div> -->
+    <div style="position:relative;overflow:hidden;">
+        <a href="https://yandex.uz/maps/10335/tashkent/?utm_medium=mapframe&utm_source=maps" style="color:#eee;font-size:12px;position:absolute;top:0px;">Ташкент</a>
+        <a href="https://yandex.uz/maps/10335/tashkent/?ll=69.279737%2C41.311151&utm_medium=mapframe&utm_source=maps&z=12" style="color:#eee;font-size:12px;position:absolute;top:14px;">Яндекс Карты — транспорт, навигация, поиск мест</a>
+        <iframe src="https://yandex.uz/map-widget/v1/?ll=69.279737%2C41.311151&z=12" width="560" height="400" frameborder="1" allowfullscreen="true" style="position:relative;"></iframe>
+    </div>
     <script>    
-        const map = new L.map('map').setView([41.335527, 69.273116], 10)
+        const map = new L.map('map').setView([41.311162, 69.279712], 15)
         L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map)
+        
 
         var loc1, loc2, routingControl
         
         map.on('click', function(e) {
-
             if (loc1 == null) {
                 loc1 = new L.marker(e.latlng, {draggable: 'true'})
                 map.addLayer(loc1)
             }
-
             else if (loc2 == null) {
                 loc2 = new L.marker(e.latlng, {draggable: 'true'})
                 map.removeLayer(loc1)
                 Routing(loc1, loc2)
             } 
         });
+
+        map.on('drag', function(e){
+            console.log(e)
+        })
         
         function Routing(loc1, loc2) {
             if (routingControl) {
@@ -50,8 +58,12 @@
                 waypoints: [
                     loc1.getLatLng(),
                     loc2.getLatLng(),
-                ]
-            }).addTo(map);            
+                ],
+                waypointMode: 'snap',
+                fitSelectedRoutes: 'smart',
+                showAlternatives: true
+
+            }).addTo(map);
         }
       
         setInterval(function(){
@@ -61,11 +73,11 @@
                         let latitude = position.coords.latitude
                         let longitude = position.coords.longitude
                         let distance = L.marker([latitude, longitude]).getLatLng().distanceTo(loc1.getLatLng())
-                        if(distance > 20){
-                            map.removeLayer(loc1)
-                            loc1 = L.marker([latitude, longitude])
-                            Routing(loc1, loc2)
-                        }
+                        // if(distance > 20){
+                        //     map.removeLayer(loc1)
+                        //     loc1 = L.marker([latitude, longitude])
+                        //     Routing(loc1, loc2)
+                        // }
                     })
                 }
             }
